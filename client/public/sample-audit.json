@@ -1,0 +1,200 @@
+{
+  "requestedUrl": "https://example-bakery.test",
+  "generatedAt": "2026-09-06T10:15:00.000Z",
+  "pages": [
+    {
+      "page": {
+        "url": "https://example-bakery.test",
+        "finalUrl": "https://example-bakery.test/",
+        "redirected": true,
+        "statusCode": 200,
+        "fetchOutcome": "ok",
+        "errorMessage": null,
+        "loadTimeMs": 620,
+        "title": "Example Bakery — Fresh Bread Daily",
+        "metaDescription": "Handmade bread and pastries baked fresh every morning in Rome.",
+        "h1": "Welcome to Example Bakery",
+        "h2Count": 3,
+        "ctaTexts": ["Order Now", "See Menu"],
+        "imageCount": 8,
+        "imagesMissingAlt": 2,
+        "internalLinksCount": 12,
+        "externalLinksCount": 3,
+        "wordCount": 480
+      },
+      "issues": [
+        {
+          "pageUrl": "https://example-bakery.test",
+          "type": "images_missing_alt",
+          "message": "2 of 8 images missing alt text",
+          "severity": "warning"
+        },
+        {
+          "pageUrl": "https://example-bakery.test",
+          "type": "duplicate_title",
+          "message": "Title is identical to another crawled page",
+          "severity": "warning"
+        }
+      ],
+      "score": 84
+    },
+    {
+      "page": {
+        "url": "https://example-bakery.test/menu",
+        "finalUrl": "https://example-bakery.test/menu",
+        "redirected": false,
+        "statusCode": 200,
+        "fetchOutcome": "ok",
+        "errorMessage": null,
+        "loadTimeMs": 410,
+        "title": "Menu — Example Bakery",
+        "metaDescription": null,
+        "h1": "Our Menu",
+        "h2Count": 4,
+        "ctaTexts": ["Click Here"],
+        "imageCount": 15,
+        "imagesMissingAlt": 5,
+        "internalLinksCount": 10,
+        "externalLinksCount": 1,
+        "wordCount": 620
+      },
+      "issues": [
+        {
+          "pageUrl": "https://example-bakery.test/menu",
+          "type": "missing_meta_description",
+          "message": "Page has no meta description",
+          "severity": "warning"
+        },
+        {
+          "pageUrl": "https://example-bakery.test/menu",
+          "type": "images_missing_alt",
+          "message": "5 of 15 images missing alt text",
+          "severity": "warning"
+        },
+        {
+          "pageUrl": "https://example-bakery.test/menu",
+          "type": "weak_cta",
+          "message": "CTA text(s) look weak: Click Here",
+          "severity": "warning"
+        }
+      ],
+      "score": 76
+    },
+    {
+      "page": {
+        "url": "https://example-bakery.test/about",
+        "finalUrl": "https://example-bakery.test/about",
+        "redirected": false,
+        "statusCode": 200,
+        "fetchOutcome": "ok",
+        "errorMessage": null,
+        "loadTimeMs": 3400,
+        "title": "Example Bakery — Fresh Bread Daily",
+        "metaDescription": "Learn more about our family-run bakery.",
+        "h1": "About Us",
+        "h2Count": 2,
+        "ctaTexts": [],
+        "imageCount": 4,
+        "imagesMissingAlt": 0,
+        "internalLinksCount": 8,
+        "externalLinksCount": 2,
+        "wordCount": 310
+      },
+      "issues": [
+        {
+          "pageUrl": "https://example-bakery.test/about",
+          "type": "slow_page",
+          "message": "Page took 3400ms to load",
+          "severity": "warning"
+        },
+        {
+          "pageUrl": "https://example-bakery.test/about",
+          "type": "duplicate_title",
+          "message": "Title is identical to another crawled page",
+          "severity": "warning"
+        },
+        {
+          "pageUrl": "https://example-bakery.test/about",
+          "type": "missing_cta",
+          "message": "No CTA-like element detected",
+          "severity": "warning"
+        }
+      ],
+      "score": 76
+    },
+    {
+      "page": {
+        "url": "https://example-bakery.test/contact",
+        "finalUrl": "https://example-bakery.test/contact",
+        "redirected": false,
+        "statusCode": 404,
+        "fetchOutcome": "http_error",
+        "errorMessage": "Request failed with status 404",
+        "loadTimeMs": 180,
+        "title": null,
+        "metaDescription": null,
+        "h1": null,
+        "h2Count": 0,
+        "ctaTexts": [],
+        "imageCount": 0,
+        "imagesMissingAlt": 0,
+        "internalLinksCount": 0,
+        "externalLinksCount": 0,
+        "wordCount": 0
+      },
+      "issues": [
+        {
+          "pageUrl": "https://example-bakery.test/contact",
+          "type": "http_error",
+          "message": "Request failed with status 404",
+          "severity": "critical"
+        }
+      ],
+      "score": 80
+    },
+    {
+      "page": {
+        "url": "https://example-bakery.test/catering",
+        "finalUrl": "https://example-bakery.test/catering",
+        "redirected": false,
+        "statusCode": null,
+        "fetchOutcome": "timeout",
+        "errorMessage": "Timed out after 8000ms",
+        "loadTimeMs": 8000,
+        "title": null,
+        "metaDescription": null,
+        "h1": null,
+        "h2Count": 0,
+        "ctaTexts": [],
+        "imageCount": 0,
+        "imagesMissingAlt": 0,
+        "internalLinksCount": 0,
+        "externalLinksCount": 0,
+        "wordCount": 0
+      },
+      "issues": [
+        {
+          "pageUrl": "https://example-bakery.test/catering",
+          "type": "timeout",
+          "message": "Timed out after 8000ms",
+          "severity": "critical"
+        }
+      ],
+      "score": 80
+    }
+  ],
+  "summary": {
+    "overallScore": 79,
+    "totalPages": 5,
+    "successfulPages": 3,
+    "failedPages": 2,
+    "criticalIssues": 2,
+    "warnings": 8,
+    "averageLoadTimeMs": 1477,
+    "pagesMissingTitle": 0,
+    "pagesMissingMetaDescription": 1,
+    "pagesMissingH1": 0,
+    "totalImagesMissingAlt": 7,
+    "detectedCtaCount": 3
+  }
+}

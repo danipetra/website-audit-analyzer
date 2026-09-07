@@ -1,0 +1,18 @@
+{
+  "name": "bliss-website-audit",
+  "version": "1.0.0",
+  "description": "Website Audit Collector & Analyzer — Bliss Agency technical assignment",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
+    "build": "npm run build -w server && npm run build -w client"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
