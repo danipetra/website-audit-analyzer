@@ -2,17 +2,33 @@
 
 import { Fragment, useState } from "react";
 import type { AuditResult, PageAuditResult } from "@/types/audit";
-import { SEVERITY_BADGE_CLASS, SEVERITY_LABEL } from "@/lib/severity";
+import {
+  SCORE_BAND_TEXT_CLASS,
+  SEVERITY_BADGE_CLASS,
+  SEVERITY_LABEL,
+  scoreBand,
+} from "@/lib/severity";
 import { pageLabel } from "@/lib/pageLabel";
 
-// Crawled-page inventory with an expandable per-page detail row. Scaffold:
-// wired to the real data, layout/hierarchy still to refine.
+// Crawled-page inventory with an expandable per-page detail row.
 
-function outcomeText(p: PageAuditResult): string {
+function OutcomeBadge({ p }: { p: PageAuditResult }) {
   const { fetchOutcome, statusCode } = p.page;
-  if (fetchOutcome === "ok") return statusCode ? `OK ${statusCode}` : "OK";
-  if (fetchOutcome === "http_error") return `HTTP ${statusCode ?? "?"}`;
-  return fetchOutcome;
+  const ok = fetchOutcome === "ok";
+  const text = ok
+    ? `OK ${statusCode ?? ""}`.trim()
+    : fetchOutcome === "http_error"
+      ? `HTTP ${statusCode ?? "?"}`
+      : fetchOutcome;
+  return (
+    <span
+      className={`rounded px-1.5 py-0.5 text-xs font-medium ${
+        ok ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
+      }`}
+    >
+      {text}
+    </span>
+  );
 }
 
 function PageDetail({ result }: { result: PageAuditResult }) {
@@ -98,14 +114,18 @@ export function PagesTable({ result }: { result: AuditResult }) {
                     <span className="text-neutral-400">{isOpen ? "▾ " : "▸ "}</span>
                     {pageLabel(p.page.url)}
                   </td>
-                  <td className="p-3 text-neutral-600">{outcomeText(p)}</td>
+                  <td className="p-3">
+                    <OutcomeBadge p={p} />
+                  </td>
                   <td className="p-3 text-neutral-600">
                     {p.page.fetchOutcome === "ok" ? `${p.page.loadTimeMs} ms` : "—"}
                   </td>
                   <td className="p-3 text-neutral-600">
                     {p.page.fetchOutcome === "ok" ? p.page.wordCount : "—"}
                   </td>
-                  <td className="p-3 font-medium text-neutral-900">{p.score}</td>
+                  <td className={`p-3 font-semibold tabular-nums ${SCORE_BAND_TEXT_CLASS[scoreBand(p.score)]}`}>
+                    {p.score}
+                  </td>
                   <td className="p-3 text-neutral-600">{p.issues.length}</td>
                 </tr>
                 {isOpen && (

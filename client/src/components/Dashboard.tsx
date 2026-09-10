@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { AuditResult } from "@/types/audit";
+import { ScoreHero } from "@/components/ScoreHero";
 import { SummaryCards } from "@/components/SummaryCards";
 import { ChartsGrid } from "@/components/Charts";
 import { IssuesList } from "@/components/IssuesList";
@@ -21,28 +22,34 @@ export function Dashboard({ result }: { result: AuditResult }) {
         <p className="text-lg font-medium text-neutral-900">{result.requestedUrl}</p>
       </div>
 
-      <div className="flex gap-1 border-b border-neutral-200">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setTab(t)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${
-              tab === t
-                ? "border-neutral-900 text-neutral-900"
-                : "border-transparent text-neutral-500 hover:text-neutral-800"
-            }`}
-          >
-            {t}
-          </button>
-        ))}
+      <div role="tablist" aria-label="Dashboard sections" className="flex gap-1 border-b border-neutral-200">
+        {TABS.map((t) => {
+          const active = tab === t;
+          return (
+            <button
+              key={t}
+              role="tab"
+              type="button"
+              aria-selected={active}
+              onClick={() => setTab(t)}
+              className={`-mb-px rounded-t border-b-2 px-3 py-2 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 ${
+                active
+                  ? "border-neutral-900 text-neutral-900"
+                  : "border-transparent text-neutral-500 hover:text-neutral-800"
+              }`}
+            >
+              {t}
+            </button>
+          );
+        })}
       </div>
 
       {tab === "Overview" && (
-        <>
+        <div className="flex flex-col gap-6">
+          <ScoreHero summary={result.summary} />
           <SummaryCards summary={result.summary} />
           <ChartsGrid result={result} />
-        </>
+        </div>
       )}
 
       {tab === "Inspected pages" && <PagesTable result={result} />}

@@ -5,3 +5,6 @@ dist/
 *.tsbuildinfo
 .env
 .env.local
+
+# private working notes, not part of the deliverable
+SESSION-LOG.md

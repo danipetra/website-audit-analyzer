@@ -50,17 +50,19 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-full bg-neutral-50">
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-10">
-        <div>
-          <h1 className="text-2xl font-semibold text-neutral-900">
+    <div className="min-h-full bg-neutral-50 text-neutral-900">
+      <header className="border-b border-neutral-200 bg-white">
+        <div className="mx-auto w-full max-w-5xl px-6 py-5">
+          <h1 className="text-xl font-semibold text-neutral-900">
             Website Audit Collector &amp; Analyzer
           </h1>
           <p className="mt-1 text-sm text-neutral-500">
-            Enter a public website URL to crawl and audit it, or load sample data.
+            Crawl a public site (homepage + up to 4 internal pages), analyze it, and score it.
           </p>
         </div>
+      </header>
 
+      <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-8">
         <AuditForm
           onRunAudit={handleRunAudit}
           onLoadSample={handleLoadSample}

@@ -1,13 +1,13 @@
-import type { AuditResult } from "@/types/audit";
+import type { AuditResult, Issue, Severity } from "@/types/audit";
 import { SEVERITY_BADGE_CLASS, SEVERITY_LABEL } from "@/lib/severity";
 import { pageLabel } from "@/lib/pageLabel";
 
-export function IssuesList({ result }: { result: AuditResult }) {
-  const rows = result.pages
-    .flatMap((p) => p.issues)
-    .sort((a, b) => (a.severity === b.severity ? 0 : a.severity === "critical" ? -1 : 1));
+const ORDER: Severity[] = ["critical", "warning"];
 
-  if (rows.length === 0) {
+export function IssuesList({ result }: { result: AuditResult }) {
+  const all = result.pages.flatMap((p) => p.issues);
+
+  if (all.length === 0) {
     return (
       <div className="rounded-lg border border-neutral-200 bg-white p-4 text-sm text-neutral-500">
         No issues detected.
@@ -15,23 +15,40 @@ export function IssuesList({ result }: { result: AuditResult }) {
     );
   }
 
+  const groups = ORDER.map((severity) => ({
+    severity,
+    issues: all.filter((i) => i.severity === severity),
+  })).filter((g) => g.issues.length > 0);
+
   return (
-    <div className="rounded-lg border border-neutral-200 bg-white">
-      <ul className="divide-y divide-neutral-100">
-        {rows.map((issue, i) => (
-          <li key={`${issue.pageUrl}-${issue.type}-${i}`} className="flex items-start gap-3 p-3">
+    <div className="flex flex-col gap-5">
+      {groups.map((group) => (
+        <section key={group.severity}>
+          <h3 className="mb-2 flex items-center gap-2 text-sm font-medium text-neutral-700">
             <span
-              className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${SEVERITY_BADGE_CLASS[issue.severity]}`}
+              className={`rounded px-2 py-0.5 text-xs font-medium ${SEVERITY_BADGE_CLASS[group.severity]}`}
             >
-              {SEVERITY_LABEL[issue.severity]}
+              {SEVERITY_LABEL[group.severity]}
             </span>
-            <div className="min-w-0">
-              <p className="text-sm text-neutral-800">{issue.message}</p>
-              <p className="truncate text-xs text-neutral-500">{pageLabel(issue.pageUrl)}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
+            <span className="text-neutral-400">{group.issues.length}</span>
+          </h3>
+          <div className="rounded-lg border border-neutral-200 bg-white">
+            <ul className="divide-y divide-neutral-100">
+              {group.issues.map((issue: Issue, i) => (
+                <li key={`${issue.pageUrl}-${issue.type}-${i}`} className="flex items-start gap-3 p-3">
+                  <code className="mt-0.5 shrink-0 rounded bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-600">
+                    {issue.type}
+                  </code>
+                  <div className="min-w-0">
+                    <p className="text-sm text-neutral-800">{issue.message}</p>
+                    <p className="truncate text-xs text-neutral-500">{pageLabel(issue.pageUrl)}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ))}
     </div>
   );
 }
