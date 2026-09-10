@@ -13,35 +13,120 @@ Open http://localhost:3000. The Next.js dev server proxies `/api/*` to the
 Express server (see `client/next.config.ts`), so the browser only ever talks
 to one origin.
 
+Three ways to populate the dashboard:
+
+- **Run audit** — enter a public URL, real crawl (homepage + up to 4
+  internal pages).
+- **Load sample data** — loads the bundled `client/public/sample-audit.json`
+  without touching the network.
+- **Import JSON file** — upload a saved audit result; it's shape-checked
+  (`client/src/lib/validateAuditResult.ts`) before it's accepted.
+
+`sample-audit.json` is **hand-crafted, then run through the real analyzer
+and scorer** (so its issues and scores always match the live pipeline). It
+deliberately contains 6 pages rather than a realistic 5, to exercise every
+issue type plus the `http_error` and `timeout` failure modes in one file.
+
 ## Stack used
 
 - **Frontend**: Next.js (App Router) + TypeScript + Tailwind CSS + Recharts
 - **Backend**: Express (TypeScript) — chosen over Next.js API routes to match
   the stack mentioned in Bliss's job listing
-- **Scraping**: native `fetch` + `cheerio`, no headless browser
-
-<!-- TODO: expand if you add/change anything -->
+- **Scraping**: native `fetch` + `cheerio`, no headless browser — the
+  brief's data points are all readable from static HTML, so a browser
+  engine would be cost without payoff at this scale. The trade-off
+  (client-rendered content, CTA presentation) is covered under *Known
+  limitations*.
+- **Charts**: Recharts (React, SVG).
 
 ## Scraping approach
 
-<!-- TODO: describe the crawl flow — homepage first, then up to 4 internal
-pages selected from same-origin links found on the homepage (see
-server/src/pageSelector.ts). One fetch per page, timeout via AbortController. -->
+1. **Fetch the homepage** with native `fetch` (Node), following redirects,
+   with a browser-like `User-Agent` (see `server/src/config.ts`).
+2. **Parse it with `cheerio`** — a server-side HTML parser, no browser, no
+   JS execution. From the raw markup it reads: `<title>`, meta description,
+   first `<h1>`, `<h2>` count, CTA-candidate text, image count + images
+   with no usable `alt`, internal vs external link counts, and an
+   estimated word count (`<body>` text with `<script>/<style>/<noscript>`
+   stripped, split on whitespace).
+3. **Pick up to 4 internal pages** from the homepage's same-origin links
+   (see *How internal pages were selected*) and fetch each one the same
+   way. Internal pages are fetched **concurrently** (`Promise.all`).
+4. **Analyse and score** every page, then build the summary.
+
+`loadTimeMs` is the server-side round trip of *our* `fetch` for that page
+— roughly the target's TTFB plus HTML download plus our network latency to
+it. **It is not a front-end/UX performance metric** (no assets, no render,
+no JS) and it's a single measurement with no retry or median.
+
+Origin comparison ignores a leading `www.` (`example.com` and
+`www.example.com` count as the same site). Links to `#…`, `mailto:`,
+`tel:`, `javascript:` and non-HTTP protocols are ignored.
 
 ## Crawl limits and timeout handling
 
-<!-- TODO: state the numbers from server/src/config.ts (timeout ms, max
-internal pages) and explain what happens on timeout / HTTP error / network
-error — see server/src/crawler.ts and the `fetchOutcome` field. -->
+| Limit | Value | Where |
+| --- | --- | --- |
+| Per-request timeout | **8000 ms** | `FETCH_TIMEOUT_MS` in `server/src/config.ts` |
+| Max internal pages | **4** (+ the homepage = 5 fetches) | `MAX_INTERNAL_PAGES` |
+| Crawl depth | 1 — only links found on the homepage, we don't recurse | `server/src/pageSelector.ts` |
+
+Each fetch is wrapped in an `AbortController` armed with that timeout. The
+crawler **never throws** — every failure mode is encoded on the page's
+`fetchOutcome` field and the audit continues:
+
+| `fetchOutcome` | When | Recorded as |
+| --- | --- | --- |
+| `ok` | 2xx response | normal analysis |
+| `http_error` | response received but not `ok` (404, 500, …) | one `critical` issue, page data left empty, `statusCode` kept |
+| `timeout` | `AbortController` fired before the response | one `critical` issue, `statusCode: null` |
+| `network_error` | DNS failure, connection refused, TLS error, … | one `critical` issue, `statusCode: null` |
+
+Redirects are followed automatically (`redirect: "follow"`); the page
+records `redirected: true` and the resolved `finalUrl`. If the **homepage**
+fails, there's nothing to extract internal links from, so the audit
+returns just that one failed page.
+
+A failed page is scored **0** (see *Scoring*).
 
 ## Assumptions made
 
-<!-- TODO -->
+- The site is a conventional server-rendered (or pre-rendered) website.
+  A client-only SPA that ships an empty `<body>` and fills it with JS will
+  look empty to the crawler — this is a known limitation, not a handled
+  case.
+- The homepage links to the pages that matter. It doesn't read
+  `sitemap.xml` or the nav menu specifically.
+- One CTA convention: calls to action are marked up as buttons or
+  button-like links (`btn` / `button` / `cta` class, `role="button"`,
+  submit inputs). Text-only links styled as CTAs purely via CSS are
+  missed.
+- Italian + English content for the CTA copy checks (the verb and
+  generic-phrase lists are IT + EN).
+- `alt=""` counts as *missing* alt text. Intentional empty alt on
+  decorative images will be flagged — acceptable noise at this scale.
+- The audit is run from a server with normal outbound internet access and
+  no site-specific allow-listing; some sites will block or rate-limit the
+  bot `User-Agent`.
 
 ## How internal pages were selected
 
-<!-- TODO: explain the heuristic in server/src/pageSelector.ts in your own
-words, and why it's a reasonable proxy for "important" pages. -->
+
+It takes the same-origin links in the homepage HTML, **in DOM order**, and
+keep the first 4 after:
+
+- dropping the homepage itself,
+- de-duplicating by path (so `/about`, `/about/`, `/about#team` count
+  once),
+- skipping obvious non-HTML assets by extension (`.pdf`, `.jpg`, `.zip`,
+  `.css`, …).
+
+DOM order is a deliberate, cheap proxy for importance: primary navigation,
+hero links and top-of-page content come first in the markup, so the pages
+a site puts first are usually the ones it considers most important. It's
+not perfect — a site could bury its nav at the end of the DOM — but it
+needs no heuristics to defend and no extra requests. See
+`server/src/pageSelector.ts`.
 
 ## Definition of a CTA, and what makes one weak
 
@@ -51,8 +136,7 @@ of button-like elements — `<button>`, and links/elements with a
 `server/src/crawler.ts`).
 
 **What makes one weak.** Only judges the button *text* — that's all a
-static-HTML crawler can see (no rendering, no JS execution, no analytics).
-A CTA text is weak if it
+static-HTML crawler can see (no rendering, no JS execution, no analytics). A CTA text is weak if it
 fails **any** of:
 
 - **A — no action verb.** The text contains no imperative verb, so it's a

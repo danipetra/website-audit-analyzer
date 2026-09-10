@@ -1,6 +1,6 @@
 {
   "requestedUrl": "https://example-bakery.test",
-  "generatedAt": "2026-09-06T10:15:00.000Z",
+  "generatedAt": "2026-09-10T10:15:00.000Z",
   "pages": [
     {
       "page": {
@@ -15,7 +15,10 @@
         "metaDescription": "Handmade bread and pastries baked fresh every morning in Rome.",
         "h1": "Welcome to Example Bakery",
         "h2Count": 3,
-        "ctaTexts": ["Order Now", "See Menu"],
+        "ctaTexts": [
+          "Order Now",
+          "See Menu"
+        ],
         "imageCount": 8,
         "imagesMissingAlt": 2,
         "internalLinksCount": 12,
@@ -51,7 +54,9 @@
         "metaDescription": null,
         "h1": "Our Menu",
         "h2Count": 4,
-        "ctaTexts": ["Click Here"],
+        "ctaTexts": [
+          "Click Here"
+        ],
         "imageCount": 15,
         "imagesMissingAlt": 5,
         "internalLinksCount": 10,
@@ -91,7 +96,7 @@
         "loadTimeMs": 3400,
         "title": "Example Bakery — Fresh Bread Daily",
         "metaDescription": "Learn more about our family-run bakery.",
-        "h1": "About Us",
+        "h1": null,
         "h2Count": 2,
         "ctaTexts": [],
         "imageCount": 4,
@@ -103,8 +108,20 @@
       "issues": [
         {
           "pageUrl": "https://example-bakery.test/about",
-          "type": "slow_page",
-          "message": "Page took 3400ms to load",
+          "type": "missing_h1",
+          "message": "Page has no <h1>",
+          "severity": "warning"
+        },
+        {
+          "pageUrl": "https://example-bakery.test/about",
+          "type": "very_slow_page",
+          "message": "Page took 3400ms to return its HTML",
+          "severity": "critical"
+        },
+        {
+          "pageUrl": "https://example-bakery.test/about",
+          "type": "missing_cta",
+          "message": "No CTA-like element detected",
           "severity": "warning"
         },
         {
@@ -112,15 +129,59 @@
           "type": "duplicate_title",
           "message": "Title is identical to another crawled page",
           "severity": "warning"
+        }
+      ],
+      "score": 56
+    },
+    {
+      "page": {
+        "url": "https://example-bakery.test/press",
+        "finalUrl": "https://example-bakery.test/press",
+        "redirected": false,
+        "statusCode": 200,
+        "fetchOutcome": "ok",
+        "errorMessage": null,
+        "loadTimeMs": 950,
+        "title": "Press & Partners — Example Bakery",
+        "metaDescription": "Coverage of Example Bakery and the partners we work with.",
+        "h1": "Press & Partners",
+        "h2Count": 1,
+        "ctaTexts": [
+          "Learn More"
+        ],
+        "imageCount": 2,
+        "imagesMissingAlt": 0,
+        "internalLinksCount": 3,
+        "externalLinksCount": 9,
+        "wordCount": 90
+      },
+      "issues": [
+        {
+          "pageUrl": "https://example-bakery.test/press",
+          "type": "slow_page",
+          "message": "Page took 950ms to return its HTML",
+          "severity": "warning"
         },
         {
-          "pageUrl": "https://example-bakery.test/about",
-          "type": "missing_cta",
-          "message": "No CTA-like element detected",
+          "pageUrl": "https://example-bakery.test/press",
+          "type": "low_content",
+          "message": "Only 90 words of content",
+          "severity": "warning"
+        },
+        {
+          "pageUrl": "https://example-bakery.test/press",
+          "type": "too_many_external_links",
+          "message": "9 external links vs 3 internal",
+          "severity": "warning"
+        },
+        {
+          "pageUrl": "https://example-bakery.test/press",
+          "type": "weak_cta",
+          "message": "CTA text(s) look weak: Learn More",
           "severity": "warning"
         }
       ],
-      "score": 76
+      "score": 68
     },
     {
       "page": {
@@ -150,7 +211,7 @@
           "severity": "critical"
         }
       ],
-      "score": 80
+      "score": 0
     },
     {
       "page": {
@@ -180,21 +241,21 @@
           "severity": "critical"
         }
       ],
-      "score": 80
+      "score": 0
     }
   ],
   "summary": {
-    "overallScore": 79,
-    "totalPages": 5,
-    "successfulPages": 3,
+    "overallScore": 47,
+    "totalPages": 6,
+    "successfulPages": 4,
     "failedPages": 2,
-    "criticalIssues": 2,
-    "warnings": 8,
-    "averageLoadTimeMs": 1477,
+    "criticalIssues": 3,
+    "warnings": 12,
+    "averageLoadTimeMs": 1345,
     "pagesMissingTitle": 0,
     "pagesMissingMetaDescription": 1,
-    "pagesMissingH1": 0,
+    "pagesMissingH1": 1,
     "totalImagesMissingAlt": 7,
-    "detectedCtaCount": 3
+    "detectedCtaCount": 4
   }
 }
