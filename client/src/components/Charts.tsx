@@ -5,7 +5,11 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  LabelList,
   Legend,
+  Pie,
+  PieChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -14,6 +18,11 @@ import {
 import type { AuditResult } from "@/types/audit";
 import { pageLabel } from "@/lib/pageLabel";
 import { CATEGORICAL, CHART_AXIS, CHART_GRID, SEQUENTIAL_BLUE, STATUS } from "@/lib/chartColors";
+
+// Load-time thresholds mirrored from server/src/analyzer.ts THRESHOLDS, shown
+// as reference lines so a single bar can be read against the benchmark.
+const SLOW_PAGE_WARN_MS = 800;
+const SLOW_PAGE_CRITICAL_MS = 3000;
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -28,6 +37,17 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 
 export function ChartsGrid({ result }: { result: AuditResult }) {
   const pages = result.pages;
+  const summary = result.summary;
+
+  const withIssues = pages.filter((p) => p.issues.length > 0).length;
+  const issuePresence = [
+    { name: "clean", count: pages.length - withIssues, color: STATUS.good },
+    { name: "has issues", count: withIssues, color: STATUS.serious },
+  ].filter((d) => d.count > 0);
+
+  const severitySplit = [
+    { name: "issues", critical: summary.criticalIssues, warning: summary.warnings },
+  ];
 
   const scoreByPage = pages.map((p) => ({ name: pageLabel(p.page.url), score: p.score }));
 
@@ -65,22 +85,38 @@ export function ChartsGrid({ result }: { result: AuditResult }) {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <ChartCard title="Score by page">
-        <BarChart data={scoreByPage}>
+        <BarChart data={scoreByPage} margin={{ top: 16 }}>
           <CartesianGrid stroke={CHART_GRID} vertical={false} />
           <XAxis dataKey="name" tick={{ fill: CHART_AXIS, fontSize: 12 }} />
           <YAxis domain={[0, 100]} tick={{ fill: CHART_AXIS, fontSize: 12 }} />
           <Tooltip />
-          <Bar dataKey="score" fill={SEQUENTIAL_BLUE} radius={[4, 4, 0, 0]} />
+          <Bar dataKey="score" fill={SEQUENTIAL_BLUE} radius={[4, 4, 0, 0]}>
+            <LabelList dataKey="score" position="top" fill={CHART_AXIS} fontSize={12} />
+          </Bar>
         </BarChart>
       </ChartCard>
 
       <ChartCard title="Load time by page (successful pages)">
-        <BarChart data={loadTimeByPage}>
+        <BarChart data={loadTimeByPage} margin={{ top: 16 }}>
           <CartesianGrid stroke={CHART_GRID} vertical={false} />
           <XAxis dataKey="name" tick={{ fill: CHART_AXIS, fontSize: 12 }} />
           <YAxis tick={{ fill: CHART_AXIS, fontSize: 12 }} unit="ms" />
           <Tooltip />
-          <Bar dataKey="loadTimeMs" fill={SEQUENTIAL_BLUE} radius={[4, 4, 0, 0]} />
+          <ReferenceLine
+            y={SLOW_PAGE_WARN_MS}
+            stroke={STATUS.warning}
+            strokeDasharray="4 4"
+            label={{ value: `warn ${SLOW_PAGE_WARN_MS}ms`, position: "right", fill: CHART_AXIS, fontSize: 11 }}
+          />
+          <ReferenceLine
+            y={SLOW_PAGE_CRITICAL_MS}
+            stroke={STATUS.critical}
+            strokeDasharray="4 4"
+            label={{ value: `critical ${SLOW_PAGE_CRITICAL_MS}ms`, position: "right", fill: CHART_AXIS, fontSize: 11 }}
+          />
+          <Bar dataKey="loadTimeMs" fill={SEQUENTIAL_BLUE} radius={[4, 4, 0, 0]}>
+            <LabelList dataKey="loadTimeMs" position="top" fill={CHART_AXIS} fontSize={12} />
+          </Bar>
         </BarChart>
       </ChartCard>
 
@@ -118,6 +154,42 @@ export function ChartsGrid({ result }: { result: AuditResult }) {
             {statusDistribution.map((entry) => (
               <Cell key={entry.name} fill={entry.color} />
             ))}
+          </Bar>
+        </BarChart>
+      </ChartCard>
+
+      <ChartCard title="Pages with issues vs clean">
+        <PieChart>
+          <Tooltip />
+          <Pie
+            data={issuePresence}
+            dataKey="count"
+            nameKey="name"
+            innerRadius={55}
+            outerRadius={90}
+            paddingAngle={2}
+          >
+            {issuePresence.map((entry) => (
+              <Cell key={entry.name} fill={entry.color} />
+            ))}
+            <LabelList dataKey="count" fill="#fff" fontSize={13} />
+          </Pie>
+          <Legend wrapperStyle={{ fontSize: 12 }} />
+        </PieChart>
+      </ChartCard>
+
+      <ChartCard title="Issue severity split">
+        <BarChart data={severitySplit} layout="vertical" margin={{ left: 16, right: 24 }}>
+          <CartesianGrid stroke={CHART_GRID} horizontal={false} />
+          <XAxis type="number" allowDecimals={false} tick={{ fill: CHART_AXIS, fontSize: 12 }} />
+          <YAxis type="category" dataKey="name" hide />
+          <Tooltip />
+          <Legend wrapperStyle={{ fontSize: 12 }} />
+          <Bar dataKey="critical" stackId="s" fill={STATUS.critical}>
+            <LabelList dataKey="critical" position="center" fill="#fff" fontSize={12} />
+          </Bar>
+          <Bar dataKey="warning" stackId="s" fill={STATUS.warning}>
+            <LabelList dataKey="warning" position="center" fill="#fff" fontSize={12} />
           </Bar>
         </BarChart>
       </ChartCard>

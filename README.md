@@ -258,3 +258,15 @@ changed. -->
   near-duplicates.
 - **Per-issue-type weights** in scoring, so e.g. a missing H1 can weigh
   more than too many external links without adding a third severity tier.
+
+  **More accessibility (WCAG) checks.** Today only `images_missing_alt`
+  (WCAG 1.1.1). Cheap static-HTML additions: missing `<html lang>`
+  (3.1.1), form inputs with no associated label (1.3.1), a viewport meta
+  that blocks zoom (1.4.4), skipped heading levels (1.3.1). A real
+  accessibility audit — colour contrast, keyboard operability, ARIA
+  correctness, focus order — needs axe-core in a headless browser.
+- **Redirect detail.** It follows redirects transparently, so it can't
+  show 301 vs 302, redirect chains, or loops. Refetching with
+  `redirect: "manual"` would let it break that down.
+- **Historical runs.** Every audit is standalone — no persistence, so no
+  trend lines or run-over-run deltas.

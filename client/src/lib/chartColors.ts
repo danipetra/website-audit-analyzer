@@ -14,4 +14,4 @@ export const STATUS = {
 };
 
 export const CHART_GRID = "#e1e0d9";
-export const CHART_AXIS = "#898781";
+export const CHART_AXIS = "#57554f";
