@@ -50,7 +50,7 @@ export async function runAudit(requestedUrl: string): Promise<AuditResult> {
 
   const pageResults: PageAuditResult[] = allPages.map((page) => {
     const issues = [...analyzePage(page), ...(duplicateTitleIssuesByUrl.get(page.url) ?? [])];
-    return { page, issues, score: calculatePageScore(issues) };
+    return { page, issues, score: calculatePageScore(page, issues) };
   });
 
   const overallScore = calculateOverallScore(pageResults.map((p) => p.score));

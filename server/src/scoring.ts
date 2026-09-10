@@ -1,16 +1,19 @@
-import type { Issue, Severity } from "./types.js";
+import type { Issue, PageData, Severity } from "./types.js";
 
 /**
  * Points deducted from a page's starting score of 100, per issue
- * severity. Your call per the brief ("define your own scoring rules ...
- * explain why the weights are what they are") — placeholders below.
+ * severity.Reasoning in the README. 
+ * The 2.5:1 ratio is the point: criticals cost more than warnings.
  */
 export const SEVERITY_WEIGHTS: Record<Severity, number> = {
   critical: 20,
   warning: 8,
 };
 
-export function calculatePageScore(issues: Issue[]): number {
+export function calculatePageScore(page: PageData, issues: Issue[]): number {
+  // A page that didn't load has no value to a visitor or to search
+  if (page.fetchOutcome !== "ok") return 0;
+
   const deduction = issues.reduce((total, issue) => total + SEVERITY_WEIGHTS[issue.severity], 0);
   return Math.max(0, 100 - deduction);
 }
