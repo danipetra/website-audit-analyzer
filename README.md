@@ -236,8 +236,65 @@ median of three fetches.
 
 ## AI tools usage
 
-<!-- TODO: be specific and honest — which tools, for which parts, what you
-changed. -->
+I used **Claude Code** (Claude Sonnet) throughout this project, interactively,
+in a running conversation rather than one-shot prompts. Here is honestly what
+it was used for, what changed from the original plan, and what stayed mine.
+
+**The original intent.** My background is front-end and creative technology,
+and React/TS/JS/Three.js/PIXI.js are where I have the deepest production experience.
+Node/Express is something I've been building up on my own time rather than
+in a job — I know the language and the framework, I just don't have the
+professional reps in it yet that I have elsewhere (my other backend exposure
+is Laravel/Flask). So the plan was to lean on AI where that gap in
+hands-on experience is, to move fast and sanity-check patterns: project
+structure, config, the Node crawler (fetch, timeouts, redirects, error
+handling), and general Express/API boilerplate. The dashboard and UI were
+meant to be built by hand:
+that's my strongest area, and I wanted the final layout, visual hierarchy and
+chart design to be mine, not generated.
+
+**What actually happened.** The brief allows up to 3 days; between work and
+other commitments I ended up with about **1 day** to execute everything. That
+forced me outside the original plan: I also used Claude Code to build the
+**dashboard's tab structure, the per-page detail view, several chart
+additions, and a full restyle pass** that I then used as a visual and
+structural *reference* rather than building it from a blank file myself. That
+is a real deviation from the original intent, caused by the time constraint,
+not a change of philosophy — I did not have the hours left to hand-build the
+UI at the level of polish I wanted and still get everything else done.
+
+**What stayed mine regardless of time pressure.** Every decision tied to the
+*problem this tool solves*, not to how to write it in code, was my own
+reasoning, argued out loud before any code was written:
+
+- what counts as a CTA and what makes one **weak** (and, just as important,
+  what I deliberately chose *not* to try to detect, given a static-HTML
+  crawler);
+- the **severity levels** — which issues are critical vs. warnings, and why;
+- the numeric **thresholds** (load-time bands, minimum word count, the
+  external-links ratio) and where each one comes from;
+- the **scoring formula and weights**, including how a page that failed to
+  load is scored;
+- what counts as an invalidating (critical) failure of a page versus a
+  quality warning, and the underlying rule used to sort every issue into one
+  bucket or the other.
+
+Claude Code implemented these in code once I'd decided them, and acted as a
+sounding board while I worked them out — surfacing relevant standards (e.g.
+Google's TTFB guidance, WCAG references) and pushing back when a rule of mine
+didn't hold up. Two concrete corrections worth naming, for honesty: I
+initially assumed a missing CTA would hurt a page's search indexing through
+lower traffic — that's not correct, it's a conversion/UX issue, no such
+indexing mechanism exists; and I initially set the threshold for a critically
+slow page too aggressively (1.5s) without accounting for how noisy a
+single-measurement load time actually is. Both were caught and fixed before
+they became rules I'd have had to walk back at the interview.
+
+**Net assessment.** Given one day instead of three, this is the compromise I
+judged right: lean on AI for scaffolding, backend mechanics, and — beyond the
+original plan — dashboard mechanics and restyling, while keeping every
+problem-specific judgment call (CTA, severity, thresholds, scoring) as my own
+reasoning that I can defend without the tool in the room.
 
 ## Known limitations
 
