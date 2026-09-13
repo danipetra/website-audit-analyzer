@@ -18,7 +18,7 @@ function extractPageData(
   statusCode: number,
   serverResponseMs: number,
   htmlDownloadMs: number,
-  html: string
+  html: string,
 ): PageData {
   const $ = cheerio.load(html);
   const base = new URL(finalUrl);
@@ -32,7 +32,10 @@ function extractPageData(
   const ctaTexts = $(CTA_SELECTOR)
     .map((_, el) => {
       const $el = $(el);
-      return ($el.text().trim() || $el.attr("value")?.trim() || "").slice(0, 120);
+      return ($el.text().trim() || $el.attr("value")?.trim() || "").slice(
+        0,
+        120,
+      );
     })
     .get()
     .filter((text) => text.length > 0);
@@ -47,7 +50,11 @@ function extractPageData(
   let externalLinksCount = 0;
   $("a[href]").each((_, el) => {
     const href = $(el).attr("href")?.trim();
-    if (!href || href.startsWith("#") || /^(mailto|tel|javascript):/i.test(href)) {
+    if (
+      !href ||
+      href.startsWith("#") ||
+      /^(mailto|tel|javascript):/i.test(href)
+    ) {
       return;
     }
     try {
@@ -94,7 +101,7 @@ function emptyPageData(
   fetchOutcome: FetchOutcome,
   serverResponseMs: number,
   statusCode: number | null,
-  errorMessage: string
+  errorMessage: string,
 ): PageData {
   return {
     url: requestedUrl,
@@ -124,7 +131,7 @@ function emptyPageData(
 // homepage). Never throws — failed fetches, timeouts and HTTP errors are
 // all encoded in the returned PageData so the caller can keep going.
 export async function fetchPageWithHtml(
-  requestedUrl: string
+  requestedUrl: string,
 ): Promise<{ page: PageData; html: string | null }> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
@@ -148,7 +155,7 @@ export async function fetchPageWithHtml(
           "http_error",
           serverResponseMs,
           response.status,
-          `Request failed with status ${response.status}`
+          `Request failed with status ${response.status}`,
         ),
         html: null,
       };
@@ -161,7 +168,7 @@ export async function fetchPageWithHtml(
     // weight/network throughput).
     const htmlDownloadMs = Math.max(
       0,
-      Math.round(performance.now() - startedAt) - serverResponseMs
+      Math.round(performance.now() - startedAt) - serverResponseMs,
     );
     const page = extractPageData(
       requestedUrl,
@@ -170,7 +177,7 @@ export async function fetchPageWithHtml(
       response.status,
       serverResponseMs,
       htmlDownloadMs,
-      html
+      html,
     );
     return { page, html };
   } catch (error) {
@@ -182,17 +189,15 @@ export async function fetchPageWithHtml(
         isAbort ? "timeout" : "network_error",
         serverResponseMs,
         null,
-        isAbort ? `Timed out after ${FETCH_TIMEOUT_MS}ms` : (error as Error).message
+        isAbort
+          ? `Timed out after ${FETCH_TIMEOUT_MS}ms`
+          : (error as Error).message,
       ),
       html: null,
     };
   } finally {
     clearTimeout(timeout);
   }
-}
-
-export async function fetchPage(requestedUrl: string): Promise<PageData> {
-  return (await fetchPageWithHtml(requestedUrl)).page;
 }
 
 // Exposed separately so the page selector can parse the homepage's raw HTML
@@ -204,7 +209,11 @@ export function extractLinksFromHtml(html: string, baseUrl: string): string[] {
 
   $("a[href]").each((_, el) => {
     const href = $(el).attr("href")?.trim();
-    if (!href || href.startsWith("#") || /^(mailto|tel|javascript):/i.test(href)) {
+    if (
+      !href ||
+      href.startsWith("#") ||
+      /^(mailto|tel|javascript):/i.test(href)
+    ) {
       return;
     }
     try {

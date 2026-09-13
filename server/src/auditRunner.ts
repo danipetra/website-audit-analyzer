@@ -1,15 +1,28 @@
-import { fetchPage, fetchPageWithHtml } from "./crawler.js";
+import { fetchPageWithHtml } from "./crawler.js";
 import { selectInternalPages } from "./pageSelector.js";
 import { analyzePage, checkDuplicateTitles, isWeakCta } from "./analyzer.js";
 import { calculateOverallScore, calculatePageScore } from "./scoring.js";
-import type { AuditResult, AuditSummary, Issue, PageAuditResult, PageData } from "./types.js";
+import { collectPageAssets } from "./assets.js";
+import type {
+  AuditResult,
+  AuditSummary,
+  Issue,
+  PageAuditResult,
+  PageData,
+} from "./types.js";
 
-function buildSummary(pages: PageAuditResult[], overallScore: number): AuditSummary {
+function buildSummary(
+  pages: PageAuditResult[],
+  overallScore: number,
+): AuditSummary {
   const successfulPages = pages.filter((p) => p.page.fetchOutcome === "ok");
   const failedPages = pages.filter((p) => p.page.fetchOutcome !== "ok");
   const allIssues = pages.flatMap((p) => p.issues);
 
-  const totalLoadTime = successfulPages.reduce((sum, p) => sum + p.page.loadTimeMs, 0);
+  const totalLoadTime = successfulPages.reduce(
+    (sum, p) => sum + p.page.loadTimeMs,
+    0,
+  );
 
   return {
     overallScore,
@@ -22,27 +35,42 @@ function buildSummary(pages: PageAuditResult[], overallScore: number): AuditSumm
       ? Math.round(totalLoadTime / successfulPages.length)
       : 0,
     pagesMissingTitle: successfulPages.filter((p) => !p.page.title).length,
-    pagesMissingMetaDescription: successfulPages.filter((p) => !p.page.metaDescription).length,
+    pagesMissingMetaDescription: successfulPages.filter(
+      (p) => !p.page.metaDescription,
+    ).length,
     pagesMissingH1: successfulPages.filter((p) => !p.page.h1).length,
-    totalImagesMissingAlt: pages.reduce((sum, p) => sum + p.page.imagesMissingAlt, 0),
+    totalImagesMissingAlt: pages.reduce(
+      (sum, p) => sum + p.page.imagesMissingAlt,
+      0,
+    ),
     detectedCtaCount: pages.reduce((sum, p) => sum + p.page.ctaTexts.length, 0),
     weakCtaCount: pages.reduce(
       (sum, p) => sum + p.page.ctaTexts.filter(isWeakCta).length,
-      0
+      0,
     ),
   };
 }
 
 export async function runAudit(requestedUrl: string): Promise<AuditResult> {
-  const { page: homepage, html: homepageHtml } = await fetchPageWithHtml(requestedUrl);
+  const { page: homepage, html: homepageHtml } =
+    await fetchPageWithHtml(requestedUrl);
 
   const internalUrls =
     homepage.fetchOutcome === "ok" && homepageHtml
       ? selectInternalPages(homepageHtml, homepage.finalUrl)
       : [];
 
-  const internalPages = await Promise.all(internalUrls.map((url) => fetchPage(url)));
-  const allPages: PageData[] = [homepage, ...internalPages];
+  const internalResults = await Promise.all(
+    internalUrls.map((url) => fetchPageWithHtml(url)),
+  );
+  const allPages: PageData[] = [
+    homepage,
+    ...internalResults.map((r) => r.page),
+  ];
+  const allHtml: (string | null)[] = [
+    homepageHtml,
+    ...internalResults.map((r) => r.html),
+  ];
 
   const duplicateTitleIssues = checkDuplicateTitles(allPages);
   const duplicateTitleIssuesByUrl = new Map<string, Issue[]>();
@@ -52,10 +80,17 @@ export async function runAudit(requestedUrl: string): Promise<AuditResult> {
     duplicateTitleIssuesByUrl.set(issue.pageUrl, existing);
   }
 
-  const pageResults: PageAuditResult[] = allPages.map((page) => {
-    const issues = [...analyzePage(page), ...(duplicateTitleIssuesByUrl.get(page.url) ?? [])];
-    return { page, issues, score: calculatePageScore(page, issues) };
-  });
+  const pageResults: PageAuditResult[] = await Promise.all(
+    allPages.map(async (page, i) => {
+      const issues = [
+        ...analyzePage(page),
+        ...(duplicateTitleIssuesByUrl.get(page.url) ?? []),
+      ];
+      const html = allHtml[i];
+      const assets = html ? await collectPageAssets(html, page.finalUrl) : [];
+      return { page, issues, score: calculatePageScore(page, issues), assets };
+    }),
+  );
 
   const overallScore = calculateOverallScore(pageResults.map((p) => p.score));
 

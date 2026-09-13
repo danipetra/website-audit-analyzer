@@ -7,9 +7,16 @@ import { OverviewRail } from "@/components/OverviewRail";
 import { ChartsGrid } from "@/components/Charts";
 import { IssuesList } from "@/components/IssuesList";
 import { PagesTable } from "@/components/PagesTable";
+import { AssetsView } from "@/components/AssetsView";
 import { RawDataView } from "@/components/RawDataView";
 
-const TABS = ["Overview", "Inspected pages", "Errors", "Raw data"] as const;
+const TABS = [
+  "Overview",
+  "Inspected pages",
+  "Assets",
+  "Errors",
+  "Raw data",
+] as const;
 type Tab = (typeof TABS)[number];
 
 export function Dashboard({ result }: { result: AuditResult }) {
@@ -61,6 +68,8 @@ export function Dashboard({ result }: { result: AuditResult }) {
       )}
 
       {tab === "Inspected pages" && <PagesTable result={result} />}
+
+      {tab === "Assets" && <AssetsView result={result} />}
 
       {tab === "Errors" && <IssuesList result={result} />}
 

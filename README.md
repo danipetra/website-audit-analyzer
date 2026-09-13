@@ -78,6 +78,26 @@ Origin comparison ignores a leading `www.` (`example.com` and
 `www.example.com` count as the same site). Links to `#…`, `mailto:`,
 `tel:`, `javascript:` and non-HTTP protocols are ignored.
 
+**Asset inventory** (the *Assets* tab). Per page, up to 10 image/video/document
+links (`<img>`, `<video src>`/`<source>`, and `<a href>` to a document/video
+extension) are collected in DOM order and checked with `HEAD` — falling back
+to a ranged `GET` (`Range: bytes=0-0`, body cancelled immediately) for
+servers that reject `HEAD` — to read `Content-Length`/`Content-Range` and
+time the response. **The asset itself is never downloaded or stored**; the
+tab's "download" is just a link back to the asset's own URL. This is purely
+informational: it has no effect on issues or scoring, and an asset that
+times out or can't be sized is still listed (name + type), just without a
+size or time. See `server/src/assets.ts`.
+
+**"Heavy" flag, on purpose kept out of scoring.** The Assets tab locally
+flags an asset as "Heavy" past a per-type size (image > 300 KB, video >
+10 MB, document > 5 MB — `client/src/components/AssetsView.tsx`). This is
+deliberately *not* an issue type or a scoring input: a `HEAD`-only check
+capped at 10 assets/page isn't a complete or reliable enough picture of a
+page's real weight to count as an "official" finding the way `slow_page` or
+`missing_title` do — it's a nudge visible only in that tab, not a claim
+about the page's SEO.
+
 ## Crawl limits and timeout handling
 
 | Limit | Value | Where |
@@ -85,6 +105,7 @@ Origin comparison ignores a leading `www.` (`example.com` and
 | Per-request timeout | **8000 ms** | `FETCH_TIMEOUT_MS` in `server/src/config.ts` |
 | Max internal pages | **4** (+ the homepage = 5 fetches) | `MAX_INTERNAL_PAGES` |
 | Crawl depth | 1 — only links found on the homepage, we don't recurse | `server/src/pageSelector.ts` |
+| Max assets checked per page | **10**, DOM order | `MAX_ASSETS_PER_PAGE` in `server/src/config.ts` |
 
 Each fetch is wrapped in an `AbortController` armed with that timeout. The
 crawler **never throws** — every failure mode is encoded on the page's
@@ -345,3 +366,9 @@ reasoning that I can defend without the tool in the room.
   `redirect: "manual"` would let it break that down.
 - **Historical runs.** Every audit is standalone — no persistence, so no
   trend lines or run-over-run deltas.
+- **Asset inventory beyond a size/latency proxy.** It's capped at 10
+  assets/page and checked with `HEAD`/ranged `GET` — real page weight and
+  which assets actually block rendering would need a headless browser (see
+  above), and pixel dimensions (to flag an image served larger than it's
+  displayed) would need a partial-byte fetch plus a format parser, which
+  felt like more machinery than this scale of asset check warranted.

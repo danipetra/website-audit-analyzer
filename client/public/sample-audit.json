@@ -47,7 +47,33 @@
           "severity": "warning"
         }
       ],
-      "score": 76
+      "score": 76,
+      "assets": [
+        {
+          "url": "https://example-bakery.test/img/hero.jpg",
+          "type": "image",
+          "ok": true,
+          "bytes": 348000,
+          "contentType": "image/jpeg",
+          "fetchMs": 145
+        },
+        {
+          "url": "https://example-bakery.test/img/logo.svg",
+          "type": "image",
+          "ok": true,
+          "bytes": 8200,
+          "contentType": "image/svg+xml",
+          "fetchMs": 38
+        },
+        {
+          "url": "https://example-bakery.test/img/storefront.jpg",
+          "type": "image",
+          "ok": false,
+          "bytes": null,
+          "contentType": null,
+          "fetchMs": 8000
+        }
+      ]
     },
     {
       "page": {
@@ -93,7 +119,33 @@
           "severity": "warning"
         }
       ],
-      "score": 76
+      "score": 76,
+      "assets": [
+        {
+          "url": "https://example-bakery.test/img/bread-1.jpg",
+          "type": "image",
+          "ok": true,
+          "bytes": 210000,
+          "contentType": "image/jpeg",
+          "fetchMs": 96
+        },
+        {
+          "url": "https://example-bakery.test/img/bread-2.jpg",
+          "type": "image",
+          "ok": true,
+          "bytes": 195000,
+          "contentType": "image/jpeg",
+          "fetchMs": 88
+        },
+        {
+          "url": "https://example-bakery.test/menu.pdf",
+          "type": "document",
+          "ok": true,
+          "bytes": 1150000,
+          "contentType": "application/pdf",
+          "fetchMs": 210
+        }
+      ]
     },
     {
       "page": {
@@ -143,7 +195,25 @@
           "severity": "warning"
         }
       ],
-      "score": 56
+      "score": 56,
+      "assets": [
+        {
+          "url": "https://example-bakery.test/img/team.jpg",
+          "type": "image",
+          "ok": true,
+          "bytes": 410000,
+          "contentType": "image/jpeg",
+          "fetchMs": 130
+        },
+        {
+          "url": "https://example-bakery.test/video/bakery-tour.mp4",
+          "type": "video",
+          "ok": true,
+          "bytes": 15400000,
+          "contentType": "video/mp4",
+          "fetchMs": 260
+        }
+      ]
     },
     {
       "page": {
@@ -195,7 +265,25 @@
           "severity": "warning"
         }
       ],
-      "score": 68
+      "score": 68,
+      "assets": [
+        {
+          "url": "https://example-bakery.test/img/press-kit-cover.jpg",
+          "type": "image",
+          "ok": true,
+          "bytes": 88000,
+          "contentType": "image/jpeg",
+          "fetchMs": 60
+        },
+        {
+          "url": "https://example-bakery.test/press-kit.zip",
+          "type": "document",
+          "ok": true,
+          "bytes": 5200000,
+          "contentType": "application/zip",
+          "fetchMs": 310
+        }
+      ]
     },
     {
       "page": {
@@ -227,7 +315,8 @@
           "severity": "critical"
         }
       ],
-      "score": 0
+      "score": 0,
+      "assets": []
     },
     {
       "page": {
@@ -259,7 +348,8 @@
           "severity": "critical"
         }
       ],
-      "score": 0
+      "score": 0,
+      "assets": []
     }
   ],
   "summary": {
