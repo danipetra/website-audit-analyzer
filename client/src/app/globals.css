@@ -1,26 +1,30 @@
 @import "tailwindcss";
 
+/* Light-only by design — the dashboard's components use fixed light
+   Tailwind classes throughout, so no dark-mode variant to swap these into. */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Same blue as SEQUENTIAL_BLUE in lib/chartColors.ts — the UI's one
+     accent (interactive/brand), kept separate from the good/warning/
+     critical severity colors so it never doubles as a status signal. */
+  --accent: #2a78d6;
+  --accent-soft: #e8f0fb;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-fraunces);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, Arial, sans-serif;
+  font-family:
+    var(--font-geist-sans), ui-sans-serif, system-ui, Arial, sans-serif;
 }

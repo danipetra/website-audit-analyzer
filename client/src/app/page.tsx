@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AuditForm } from "@/components/AuditForm";
 import { Dashboard } from "@/components/Dashboard";
+import { EmptyState } from "@/components/EmptyState";
 import { isAuditResult } from "@/lib/validateAuditResult";
 import type { AuditResult } from "@/types/audit";
 
@@ -42,7 +43,8 @@ export default function Home() {
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      if (!isAuditResult(data)) throw new Error("File doesn't match the expected audit shape");
+      if (!isAuditResult(data))
+        throw new Error("File doesn't match the expected audit shape");
       setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not read file");
@@ -50,19 +52,20 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-full bg-neutral-50 text-neutral-900">
+    <div className="min-h-screen bg-neutral-50 text-neutral-900">
       <header className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto w-full max-w-5xl px-6 py-5">
-          <h1 className="text-xl font-semibold text-neutral-900">
+        <div className="mx-auto w-full max-w-6xl px-6 py-5">
+          <h1 className="font-display text-xl font-semibold text-neutral-900">
             Website Audit Collector &amp; Analyzer
           </h1>
           <p className="mt-1 text-sm text-neutral-500">
-            Crawl a public site (homepage + up to 4 internal pages), analyze it, and score it.
+            Crawl a public site (homepage + up to 4 internal pages), analyze it,
+            and score it.
           </p>
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-8">
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8">
         <AuditForm
           onRunAudit={handleRunAudit}
           onLoadSample={handleLoadSample}
@@ -76,7 +79,11 @@ export default function Home() {
           </div>
         )}
 
-        {result && <Dashboard result={result} />}
+        {result ? (
+          <Dashboard result={result} />
+        ) : (
+          <EmptyState loading={loading} />
+        )}
       </main>
     </div>
   );

@@ -109,3 +109,17 @@ organizzato, e pragmatismo:
 
 In sintesi: pragmatico, leggibile, onesto — non impressionare con complessità, ma con
 chiarezza di pensiero applicata a poco codice ben fatto.
+
+## Punti da tenere sincronizzati
+
+`client/src/components/EmptyState.tsx` (la schermata prima di lanciare un audit)
+spiega all'utente, in prosa, il comportamento reale del crawler — non è solo copy:
+
+- `SCAN_STEPS` rispecchia `server/src/config.ts` (`FETCH_TIMEOUT_MS`,
+  `MAX_INTERNAL_PAGES`).
+- `CHECKS` rispecchia i tipi di issue in `server/src/analyzer.ts`
+  (`ISSUE_SEVERITY`).
+
+Se cambi una soglia di crawl o aggiungi/rimuovi un tipo di check, aggiorna anche
+questo componente oltre al README — altrimenti la schermata iniziale finisce per
+raccontare bugie su cosa fa davvero il tool.
