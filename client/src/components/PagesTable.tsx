@@ -36,7 +36,9 @@ function PageDetail({ result }: { result: PageAuditResult }) {
   const metrics: [string, string | number][] = [
     ["Final URL", p.finalUrl],
     ["Redirected", p.redirected ? "yes" : "no"],
-    ["Load time", `${p.loadTimeMs} ms`],
+    ["Load time (total)", `${p.loadTimeMs} ms`],
+    ["— server response", `${p.serverResponseMs} ms`],
+    ["— HTML download", `${p.htmlDownloadMs} ms`],
     ["Word count", p.wordCount],
     ["Title", p.title ?? "—"],
     ["Meta description", p.metaDescription ?? "—"],

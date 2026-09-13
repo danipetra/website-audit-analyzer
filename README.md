@@ -54,10 +54,25 @@ issue type plus the `http_error` and `timeout` failure modes in one file.
    way. Internal pages are fetched **concurrently** (`Promise.all`).
 4. **Analyse and score** every page, then build the summary.
 
-`loadTimeMs` is the server-side round trip of *our* `fetch` for that page
-— roughly the target's TTFB plus HTML download plus our network latency to
-it. **It is not a front-end/UX performance metric** (no assets, no render,
-no JS) and it's a single measurement with no retry or median.
+Timing is split into two numbers, both server-side round trips of *our*
+`fetch` for that page — **not** front-end/UX performance metrics (no
+assets, no render, no JS), and each a single measurement with no retry or
+median:
+
+- `serverResponseMs` — from the start of the request to the moment
+  `fetch()` resolves, i.e. when response headers arrive. Covers DNS, TCP,
+  TLS, sending the request and the target's own time-to-first-byte.
+- `htmlDownloadMs` — from there to the last byte of the HTML body
+  (`await response.text()`). Reading `p.page.serverResponseMs` and
+  `p.page.htmlDownloadMs` apart tells "the server is slow to respond"
+  from "the HTML document itself is heavy" — a slow page for one reason
+  needs a different fix than a slow page for the other.
+- `loadTimeMs` is their sum, and it's what the `slow_page` /
+  `very_slow_page` thresholds check (see *Severity levels*).
+
+For failed fetches (`http_error`, `timeout`, `network_error`) the body is
+never read, so `htmlDownloadMs` is `0` and `loadTimeMs` equals
+`serverResponseMs`.
 
 Origin comparison ignores a leading `www.` (`example.com` and
 `www.example.com` count as the same site). Links to `#…`, `mailto:`,
@@ -147,9 +162,11 @@ fails **any** of:
   più" — technically verbs, but they communicate nothing about the
   outcome.
 
-See `isWeakCta` in `server/src/analyzer.ts`. The `weak_cta` issue fires
-only when *every* CTA on a page is weak (i.e. the page has no strong CTA).
-If no CTA candidate is found at all, that's `missing_cta` instead.
+**`missing_cta` vs `weak_cta`.** `missing_cta` fires when the page has no
+CTA candidate at all. `weak_cta` fires when **at least one** CTA on the
+page is weak — the issue message lists the weak ones — so a weak CTA is
+surfaced even when a strong CTA is also present on the page. See
+`isWeakCta` and `analyzePage` in `server/src/analyzer.ts`.
 
 **Known limits of this check** (see also *What I'd improve*):
 
@@ -229,7 +246,8 @@ the zeros from failed pages. If two of five crawled pages are down, that
 *is* a serious problem and the headline number should show it — weighting
 the failures away would hide the finding.
 
-**Known limitation.** Load time is a single measurement with no retry or
+**Known limitation.** Load time (`serverResponseMs` + `htmlDownloadMs`,
+see *Scraping approach*) is a single measurement with no retry or
 median, so a transient network spike from the audit server can push a
 page into `slow_page` / `very_slow_page`. With more time we'd take the
 median of three fetches.

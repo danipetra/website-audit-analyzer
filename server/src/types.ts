@@ -10,6 +10,8 @@ export interface PageData {
   fetchOutcome: FetchOutcome;
   errorMessage: string | null;
   loadTimeMs: number;
+  serverResponseMs: number;
+  htmlDownloadMs: number;
   title: string | null;
   metaDescription: string | null;
   h1: string | null;
@@ -48,6 +50,7 @@ export interface AuditSummary {
   pagesMissingH1: number;
   totalImagesMissingAlt: number;
   detectedCtaCount: number;
+  weakCtaCount: number;
 }
 
 export interface AuditResult {

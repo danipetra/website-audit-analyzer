@@ -16,7 +16,8 @@ function extractPageData(
   finalUrl: string,
   redirected: boolean,
   statusCode: number,
-  loadTimeMs: number,
+  serverResponseMs: number,
+  htmlDownloadMs: number,
   html: string
 ): PageData {
   const $ = cheerio.load(html);
@@ -72,7 +73,9 @@ function extractPageData(
     statusCode,
     fetchOutcome: "ok",
     errorMessage: null,
-    loadTimeMs,
+    loadTimeMs: serverResponseMs + htmlDownloadMs,
+    serverResponseMs,
+    htmlDownloadMs,
     title,
     metaDescription,
     h1,
@@ -89,7 +92,7 @@ function extractPageData(
 function emptyPageData(
   requestedUrl: string,
   fetchOutcome: FetchOutcome,
-  loadTimeMs: number,
+  serverResponseMs: number,
   statusCode: number | null,
   errorMessage: string
 ): PageData {
@@ -100,7 +103,9 @@ function emptyPageData(
     statusCode,
     fetchOutcome,
     errorMessage,
-    loadTimeMs,
+    loadTimeMs: serverResponseMs,
+    serverResponseMs,
+    htmlDownloadMs: 0,
     title: null,
     metaDescription: null,
     h1: null,
@@ -131,14 +136,17 @@ export async function fetchPageWithHtml(
       redirect: "follow",
       headers: { "User-Agent": USER_AGENT },
     });
-    const loadTimeMs = Math.round(performance.now() - startedAt);
+    // fetch() resolves once response headers arrive — this is the server's
+    // side of the round trip (DNS + TCP + TLS + request + first byte),
+    // before a single byte of the HTML body has been read.
+    const serverResponseMs = Math.round(performance.now() - startedAt);
 
     if (!response.ok) {
       return {
         page: emptyPageData(
           requestedUrl,
           "http_error",
-          loadTimeMs,
+          serverResponseMs,
           response.status,
           `Request failed with status ${response.status}`
         ),
@@ -147,23 +155,32 @@ export async function fetchPageWithHtml(
     }
 
     const html = await response.text();
+    // Everything after fetch() resolved and before the body finished
+    // downloading/decoding — kept separate so a slow serverResponseMs
+    // (server-side) can be told apart from a slow htmlDownloadMs (page
+    // weight/network throughput).
+    const htmlDownloadMs = Math.max(
+      0,
+      Math.round(performance.now() - startedAt) - serverResponseMs
+    );
     const page = extractPageData(
       requestedUrl,
       response.url,
       response.redirected,
       response.status,
-      loadTimeMs,
+      serverResponseMs,
+      htmlDownloadMs,
       html
     );
     return { page, html };
   } catch (error) {
-    const loadTimeMs = Math.round(performance.now() - startedAt);
+    const serverResponseMs = Math.round(performance.now() - startedAt);
     const isAbort = error instanceof Error && error.name === "AbortError";
     return {
       page: emptyPageData(
         requestedUrl,
         isAbort ? "timeout" : "network_error",
-        loadTimeMs,
+        serverResponseMs,
         null,
         isAbort ? `Timed out after ${FETCH_TIMEOUT_MS}ms` : (error as Error).message
       ),

@@ -26,8 +26,10 @@ export const ISSUE_SEVERITY: Record<string, Severity> = {
 /**
  * Numeric thresholds behind the checks below
  *
- * Load time is the time from  fetch() to the last byte of the HTML:
- * That number is noisy, so the bars are generous:
+ * Load time is serverResponseMs + htmlDownloadMs (see server/src/crawler.ts):
+ * from the start of the request to the last byte of the HTML body, server
+ * round trip and body download both included. That number is noisy, so the
+ * bars are generous:
  *   - 800ms  -> slow_page (warning): roughly Google's "good" TTFB boundary
  *   - 3000ms -> very_slow_page (critical): server-is-the-problem territory
  *     where even with measurement noise the page is effectively
@@ -70,7 +72,7 @@ const GENERIC_CTA_PHRASES = new Set([
   "go", "continue", "more", "more info", "find out more", "see more",
 ]);
 
-function isWeakCta(ctaText: string): boolean {
+export function isWeakCta(ctaText: string): boolean {
   const text = ctaText.trim().toLowerCase();
   if (!text) return true;
 
@@ -147,11 +149,14 @@ export function analyzePage(page: PageData): Issue[] {
     );
   }
 
+  // missing_cta: no CTA candidate at all. weak_cta: one or more of the
+  // page's CTAs reads weak — flag those even if a strong CTA is also present.
+  const weakCtas = page.ctaTexts.filter(isWeakCta);
   if (page.ctaTexts.length === 0) {
     issues.push(makeIssue(page.url, "missing_cta", "No CTA-like element detected"));
-  } else if (page.ctaTexts.every(isWeakCta)) {
+  } else if (weakCtas.length > 0) {
     issues.push(
-      makeIssue(page.url, "weak_cta", `CTA text(s) look weak: ${page.ctaTexts.join(", ")}`)
+      makeIssue(page.url, "weak_cta", `Weak CTA text: ${weakCtas.join(", ")}`)
     );
   }
 

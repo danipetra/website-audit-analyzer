@@ -11,6 +11,8 @@
         "fetchOutcome": "ok",
         "errorMessage": null,
         "loadTimeMs": 620,
+        "serverResponseMs": 210,
+        "htmlDownloadMs": 410,
         "title": "Example Bakery — Fresh Bread Daily",
         "metaDescription": "Handmade bread and pastries baked fresh every morning in Rome.",
         "h1": "Welcome to Example Bakery",
@@ -34,12 +36,18 @@
         },
         {
           "pageUrl": "https://example-bakery.test",
+          "type": "weak_cta",
+          "message": "Weak CTA text: See Menu",
+          "severity": "warning"
+        },
+        {
+          "pageUrl": "https://example-bakery.test",
           "type": "duplicate_title",
           "message": "Title is identical to another crawled page",
           "severity": "warning"
         }
       ],
-      "score": 84
+      "score": 76
     },
     {
       "page": {
@@ -50,6 +58,8 @@
         "fetchOutcome": "ok",
         "errorMessage": null,
         "loadTimeMs": 410,
+        "serverResponseMs": 150,
+        "htmlDownloadMs": 260,
         "title": "Menu — Example Bakery",
         "metaDescription": null,
         "h1": "Our Menu",
@@ -79,7 +89,7 @@
         {
           "pageUrl": "https://example-bakery.test/menu",
           "type": "weak_cta",
-          "message": "CTA text(s) look weak: Click Here",
+          "message": "Weak CTA text: Click Here",
           "severity": "warning"
         }
       ],
@@ -94,6 +104,8 @@
         "fetchOutcome": "ok",
         "errorMessage": null,
         "loadTimeMs": 3400,
+        "serverResponseMs": 3100,
+        "htmlDownloadMs": 300,
         "title": "Example Bakery — Fresh Bread Daily",
         "metaDescription": "Learn more about our family-run bakery.",
         "h1": null,
@@ -142,6 +154,8 @@
         "fetchOutcome": "ok",
         "errorMessage": null,
         "loadTimeMs": 950,
+        "serverResponseMs": 700,
+        "htmlDownloadMs": 250,
         "title": "Press & Partners — Example Bakery",
         "metaDescription": "Coverage of Example Bakery and the partners we work with.",
         "h1": "Press & Partners",
@@ -177,7 +191,7 @@
         {
           "pageUrl": "https://example-bakery.test/press",
           "type": "weak_cta",
-          "message": "CTA text(s) look weak: Learn More",
+          "message": "Weak CTA text: Learn More",
           "severity": "warning"
         }
       ],
@@ -192,6 +206,8 @@
         "fetchOutcome": "http_error",
         "errorMessage": "Request failed with status 404",
         "loadTimeMs": 180,
+        "serverResponseMs": 180,
+        "htmlDownloadMs": 0,
         "title": null,
         "metaDescription": null,
         "h1": null,
@@ -222,6 +238,8 @@
         "fetchOutcome": "timeout",
         "errorMessage": "Timed out after 8000ms",
         "loadTimeMs": 8000,
+        "serverResponseMs": 8000,
+        "htmlDownloadMs": 0,
         "title": null,
         "metaDescription": null,
         "h1": null,
@@ -245,17 +263,18 @@
     }
   ],
   "summary": {
-    "overallScore": 47,
+    "overallScore": 46,
     "totalPages": 6,
     "successfulPages": 4,
     "failedPages": 2,
     "criticalIssues": 3,
-    "warnings": 12,
+    "warnings": 13,
     "averageLoadTimeMs": 1345,
     "pagesMissingTitle": 0,
     "pagesMissingMetaDescription": 1,
     "pagesMissingH1": 1,
     "totalImagesMissingAlt": 7,
-    "detectedCtaCount": 4
+    "detectedCtaCount": 4,
+    "weakCtaCount": 3
   }
 }

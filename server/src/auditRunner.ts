@@ -1,6 +1,6 @@
 import { fetchPage, fetchPageWithHtml } from "./crawler.js";
 import { selectInternalPages } from "./pageSelector.js";
-import { analyzePage, checkDuplicateTitles } from "./analyzer.js";
+import { analyzePage, checkDuplicateTitles, isWeakCta } from "./analyzer.js";
 import { calculateOverallScore, calculatePageScore } from "./scoring.js";
 import type { AuditResult, AuditSummary, Issue, PageAuditResult, PageData } from "./types.js";
 
@@ -26,6 +26,10 @@ function buildSummary(pages: PageAuditResult[], overallScore: number): AuditSumm
     pagesMissingH1: successfulPages.filter((p) => !p.page.h1).length,
     totalImagesMissingAlt: pages.reduce((sum, p) => sum + p.page.imagesMissingAlt, 0),
     detectedCtaCount: pages.reduce((sum, p) => sum + p.page.ctaTexts.length, 0),
+    weakCtaCount: pages.reduce(
+      (sum, p) => sum + p.page.ctaTexts.filter(isWeakCta).length,
+      0
+    ),
   };
 }
 
